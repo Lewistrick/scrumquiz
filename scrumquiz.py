@@ -97,3 +97,4 @@ if __name__ == "__main__":
 
     score = quiz.take()
     logger.info(f"Done! Final score: {100*score:.2f}")
+    logger.info("Rerun this script to retry wrong answers.")
