@@ -1,11 +1,13 @@
 import argparse
 import random
-import string
-from abc import ABC, abstractmethod
 from pathlib import Path
 
 import requests
 from loguru import logger
+
+from prompter import ShufflePrompter
+from question import Question
+from quiz import Quiz
 
 # Location of repo with questions
 repo = "Professional-Scrum-Developer-I-PSD-I-Practice-Tests-Exams-Questions-Answers"
@@ -19,117 +21,45 @@ f = d / "quiz.md"
 first_q_line = "### When can Product Backlog Refinement occur?"
 
 
-class Question:
-    def __init__(self, question: str, answers: list[str], correct_ids: list[int]):
-        self.question = question
-        self.answers = answers
-        self.correct_ids = correct_ids
-
-    @classmethod
-    def from_lines(cls, lines: list[str]):
-        """Creates a question from a list of text lines."""
-        if not lines[0].startswith("### "):
-            raise ValueError("Invalid question line: " + lines[0])
-        question = lines[0].removeprefix("###").strip()
-        answers = []
-        curr_idx = 0
-        correct_ids = []
-        for line_raw in lines[1:]:
-            line = line_raw.strip()
-            if line.startswith("- [ ] "):
-                answers.append(line.removeprefix("- [ ] "))
-            elif line.startswith("- [x] "):
-                answers.append(line.removeprefix("- [x] "))
-                correct_ids.append(curr_idx)
-            else:
-                continue
-            curr_idx += 1
-        if not answers or not correct_ids:
-            raise ValueError("No answers or correct_ids")
-        question = cls(question, answers, correct_ids)
-        return question
-
-
-class Prompter(ABC):
-    """A base class that can be used to prompt a question and gather user response."""
-
-    @abstractmethod
-    def ask(self, question: Question) -> bool:
-        """Ask (show) a question and record the user's answer.
-
-        Return whether the user responded correctly.
-        """
-        ...
-
-
-class ShufflePrompter(Prompter):
-    """A Prompter that randomly shuffles the answers for a question."""
-
-    def ask(self, question: Question):
-        logger.warning(question.question)
-        answer_order = list(range(len(question.answers)))
-        random.shuffle(answer_order)
-        answer_letters = random.sample(string.ascii_uppercase, len(question.answers))
-        corr_letters = set()
-        for idx in answer_order:
-            letter = answer_letters[idx]
-            logger.info(f"({letter}) {question.answers[idx]}")
-            if idx in question.correct_ids:
-                corr_letters.add(letter)
-
-        guess = set(input("Give all letters with correct answers, e.g. 'ABC' >>> "))
-        if guess == corr_letters:
-            logger.success("That's correct!")
-            return True
-
-        corr_str = "answers were" if len(corr_letters) > 1 else "answer was"
-        logger.error(f"Wrong! The correct {corr_str}: " + "".join(corr_letters))
-        return False
-
-
-class Quiz:
-    def __init__(self, questions: list[Question], prompter: Prompter):
-        self.questions = questions
-        random.shuffle(self.questions)
-        self.prompter = prompter
-
-    @property
-    def nq(self) -> int:
-        return len(self.questions)
-
-    def take(self) -> int:
-        score = 0
-        for qi, question in enumerate(self.questions, 1):
-            result = self.prompter.ask(question)
-            score += result
-            logger.info(f"Progress: {qi}/{self.nq} ({100*qi/self.nq:.2f}%)")
-            logger.info(f"Current score: {score}/{qi} ({100*score/qi:.2f}%)")
-
-        return score
-
-
-if __name__ == "__main__":
+def read_arguments():
     parser = argparse.ArgumentParser()
     parser.add_argument(
         "--update",
         action="store_true",
         help="Update questions (use github to download file)",
     )
+    parser.add_argument(
+        "--ordered",
+        action="store_true",
+        help="Ask the questions fixed order (default: shuffle)",
+    )
+    parser.add_argument(
+        "-n",
+        type=int,
+        default=10,
+        help="Number of questions to ask (default: 10)",
+    )
     args = parser.parse_args()
+    return args
 
-    if args.update or not f.exists():
-        if args.update:
-            logger.info("Updating questions...")
-        else:
-            logger.info("Downloading questions for the first time...")
-        resp = requests.get(quiz_link)
-        resp.raise_for_status()
-        with f.open("wb") as handle:
-            handle.write(resp.content)
 
+def downlad_questions(quiz_link: str, targetfile: Path):
+    logger.debug("Downloading questions...")
+    resp = requests.get(quiz_link)
+    resp.raise_for_status()
+    with targetfile.open("wb") as handle:
+        handle.write(resp.content)
+
+
+def parse_questions(
+    questions_file: Path,
+    first_q_line: str,
+    shuffle: bool,
+    n: int | None,
+) -> list[Question]:
     questions: list[Question] = []
 
-    with f.open(encoding="utf-8") as lines:
+    with questions_file.open(encoding="utf-8") as lines:
         # read until the first question
         for line in lines:
             if line.strip() == first_q_line:
@@ -146,5 +76,24 @@ if __name__ == "__main__":
         questions.append(Question.from_lines(curr_q_lines))
         logger.debug(f"Read {len(questions)} questions")
 
+    if shuffle:
+        random.shuffle(questions)
+
+    if n:
+        questions = questions[:n]
+
+    return questions
+
+
+if __name__ == "__main__":
+    args = read_arguments()
+
+    if args.update or not f.exists():
+        downlad_questions(quiz_link, f)
+
+    questions = parse_questions(f, first_q_line, shuffle=not args.ordered, n=args.n)
+
     quiz = Quiz(questions=questions, prompter=ShufflePrompter())
-    quiz.take()
+    score = quiz.take()
+
+    logger.info(f"Done! Your final score is {score} / {len(quiz.questions)})")
