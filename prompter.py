@@ -37,7 +37,7 @@ class ShufflePrompter(Prompter):
 
     def ask(self, question: Question):
         answer_letters = random.sample(string.ascii_uppercase, len(question.answers))
-        answer_letters = self.print_question(question, answer_letters)
+        self.print_question(question, answer_letters)
 
         corr_letters = {answer_letters[i] for i in question.correct_ids}
         guessed_letters = self.record_input()

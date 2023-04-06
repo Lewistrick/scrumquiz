@@ -96,4 +96,4 @@ if __name__ == "__main__":
     quiz = Quiz(questions=questions, prompter=ShufflePrompter())
     score = quiz.take()
 
-    logger.info(f"Done! Your final score is {score} / {len(quiz.questions)})")
+    logger.info(f"Done! Final score: {100*score:.2f}")

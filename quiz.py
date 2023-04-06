@@ -21,4 +21,5 @@ class Quiz:
             logger.info(f"Progress: {qi}/{self.nq} ({100*qi/self.nq:.2f}%)")
             logger.info(f"Current score: {score}/{qi} ({100*score/qi:.2f}%)")
 
-        return score
+        logger.info(f"Done! You answered {score} questions correctly.")
+        return score / self.nq
