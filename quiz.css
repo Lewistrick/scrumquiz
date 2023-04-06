@@ -1,0 +1,46 @@
+Static {
+    margin: 1;
+    padding: 1;
+}
+
+QuizPanel {
+    width: 75%;
+}
+
+.question {
+    background: rgb(81, 81, 158);
+}
+
+.answer {
+    background: gray;
+    color: white;
+    width: 100%;
+    margin: 1;
+}
+
+.answergrid {
+    layout: grid;
+    grid-size: 3 3;
+    height: 50%;
+}
+
+.horz {
+    layout: horizontal;
+}
+
+.status {
+    min-height: 2;
+    padding-bottom: 2;
+    overflow: auto;
+}
+
+.submit {
+    background: green;
+    height: 3;
+    margin-right: 1;
+    dock: right;
+}
+
+.toggled {
+    background: rgb(50, 13, 99);
+}
