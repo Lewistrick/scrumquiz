@@ -9,6 +9,9 @@
 - Install dependencies: `python -m pip install -r requirements.txt`
 - Run the script: `python scrumquiz.py`
 
+## Acknowledgements
+- Many thanks to Ditectrev for compiling a [list of questions](https://github.com/Ditectrev/Professional-Scrum-Developer-I-PSD-I-Practice-Tests-Exams-Questions-Answers)!
+
 ## Notes
 - A results.csv file is created that contains the results for each question.
 - Questions with correct answers are skipped.
