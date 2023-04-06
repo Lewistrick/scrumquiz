@@ -10,8 +10,8 @@
 - Run the script: `python scrumquiz.py`
 
 ## Notes
-- By default, all 291 questions will be asked.
 - A results.csv file is created that contains the results for each question.
+- Questions with correct answers are skipped.
 - If all questions are answered correctly, the file is removed.
 
 ## Extra options
