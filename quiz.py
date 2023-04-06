@@ -50,7 +50,8 @@ class Quiz:
 
         return results
 
-    def take(self) -> int:
+    def take(self) -> float:
+        """Take the quiz and return the percentage of correct answers."""
         score = 0
         for qi, question in enumerate(self.questions, 1):
             # Skip if this question was already answered correctly.
