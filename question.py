@@ -1,8 +1,15 @@
+from hashlib import sha256
+
+
 class Question:
     def __init__(self, question: str, answers: list[str], correct_ids: list[int]):
         self.question = question
         self.answers = answers
         self.correct_ids = correct_ids
+
+    def __hash__(self):
+        hashable_text = self.question + "/".join(self.answers) + str(self.correct_ids)
+        return int(sha256(hashable_text.encode()).hexdigest(), 16)
 
     @classmethod
     def from_lines(cls, lines: list[str]):

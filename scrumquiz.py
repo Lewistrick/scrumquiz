@@ -55,7 +55,7 @@ def parse_questions(
     questions_file: Path,
     first_q_line: str,
     shuffle: bool,
-    n: int | None,
+    limit: int | None,
 ) -> list[Question]:
     questions: list[Question] = []
 
@@ -79,8 +79,8 @@ def parse_questions(
     if shuffle:
         random.shuffle(questions)
 
-    if n:
-        questions = questions[:n]
+    if limit:
+        questions = questions[:limit]
 
     return questions
 
@@ -91,9 +91,9 @@ if __name__ == "__main__":
     if args.update or not f.exists():
         downlad_questions(quiz_link, f)
 
-    questions = parse_questions(f, first_q_line, shuffle=not args.ordered, n=args.n)
+    questions = parse_questions(f, first_q_line, shuffle=not args.ordered, limit=args.n)
 
     quiz = Quiz(questions=questions, prompter=ShufflePrompter())
-    score = quiz.take()
 
+    score = quiz.take()
     logger.info(f"Done! Final score: {100*score:.2f}")

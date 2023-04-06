@@ -29,11 +29,12 @@ class ShufflePrompter(Prompter):
                     "Using shuffle prompter.",
                     "Answers for each question will be shuffled.",
                     "Each answer will be a random letter.",
-                    "You can give answers in both lower- and uppercase;"
+                    "You can give answers in both lower- and uppercase;",
                     "only letters will be recorded.",
                 )
             )
         )
+        print()
 
     def ask(self, question: Question):
         answer_letters = random.sample(string.ascii_uppercase, len(question.answers))

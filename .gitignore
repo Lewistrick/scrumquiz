@@ -1,3 +1,6 @@
+__pycache__
 .venv
-quiz.md
 *.py[cod]
+
+quiz.md
+results.py
